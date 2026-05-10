@@ -99,13 +99,11 @@ with col_logo:
 with col_titre:
     st.markdown("<h1 style='margin:0; padding-top:4px;'>CinéRAG</h1>", unsafe_allow_html=True)
 with col_info:
-    st.markdown("<p style='color:#999 !important; font-size:12px !important; text-align:right; margin-top:10px;'>1 000 films indexés</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#999 !important; font-size:12px !important; text-align:right; margin-top:10px;'>4 953 films indexés</p>", unsafe_allow_html=True)
 
 st.markdown("<hr style='border:none; border-top:0.5px solid #eee; margin:8px 0 16px;'>", unsafe_allow_html=True)
 
 # BOUTONS SUGGESTIONS 
-
-st.markdown("<p style='font-size:12px; color:#999 !important; margin-bottom:6px;'>Suggestions</p>", unsafe_allow_html=True)
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
@@ -120,8 +118,6 @@ with col3:
 with col4:
     if st.button("💕 Romance"):
         st.session_state.suggestion = "Un film romantique émouvant ?"
-
-st.markdown("<hr style='border:none; border-top:0.5px solid #eee; margin:16px 0;'>", unsafe_allow_html=True)
 
 # CHARGEMENT
 

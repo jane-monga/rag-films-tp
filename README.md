@@ -1,14 +1,16 @@
-# 🎬 RAG Films — TP Python
+# 🎬 CinéRAG — Assistant Films RAG
 
 Système de recommandation de films basé sur RAG (Retrieval-Augmented Generation).
 Construit avec FAISS, sentence-transformers et l'API Groq, sans LangChain ni LlamaIndex.
 
 ## Fonctionnalités
 
-- Recherche sémantique dans une base de 1000 films
+- Recherche sémantique dans une base de 4 953 films
 - Recommandations argumentées générées par un LLM
 - Citations des sources après chaque réponse
 - Avertissement si aucun film pertinent n'est trouvé
+- Interface web interactive via Streamlit
+- Interface ligne de commande disponible via rag.py
 
 ## Installation
 
@@ -35,7 +37,10 @@ Construit avec FAISS, sentence-transformers et l'API Groq, sans LangChain ni Lla
 6. Lancer l'indexation (une seule fois)
    python indexation.py
 
-7. Lancer le RAG
+7. Lancer l'interface web Streamlit (recommandé)
+   streamlit run app.py
+
+8. Ou lancer le RAG en ligne de commande
    python rag.py
 
 ## Architecture
@@ -53,9 +58,24 @@ Question → Embedding → Recherche FAISS → Top 5 chunks → LLM Groq → Ré
 - Base vectorielle : FAISS IndexFlatL2, sauvegardée sur disque
 - LLM : llama-3.3-70b-versatile via Groq
 - Temperature : 0.3 pour des réponses cohérentes
+- Interface : Streamlit avec style minimaliste moderne
 
 ## Exemple de questions
 
 - "Un film de science-fiction avec de l'intelligence artificielle ?"
 - "Un thriller psychologique avec un retournement de situation ?"
 - "Un film d'animation familial ?"
+- "Une romance émouvante ?"
+
+## Structure du projet
+
+mon_rag/
+├── indexation.py      # Script de création de la base vectorielle
+├── rag.py             # Interface ligne de commande
+├── app.py             # Interface web Streamlit
+├── README.md          # Documentation
+├── compte_rendu.md    # Analyse et choix techniques
+├── requirements.txt   # Dépendances
+├── .gitignore         # Fichiers exclus de Git
+├── data/              # À créer localement (non versionné)
+└── index/             # Généré par indexation.py (non versionné)

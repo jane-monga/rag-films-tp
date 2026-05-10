@@ -20,7 +20,7 @@ modele = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 print(f"✅ Base chargée — {index.ntotal} films indexés\n")
 
-#  2. FONCTION DE RECHERCHE 
+# 2. FONCTION DE RECHERCHE 
 
 def rechercher(question, k=5):
     """Trouve les k films les plus pertinents pour la question."""
@@ -37,7 +37,7 @@ def rechercher(question, k=5):
             })
     return resultats
 
-#  3. PROMPT SYSTÈME 
+# 3. PROMPT SYSTÈME 
 
 def construire_prompt_systeme():
     return """Tu es un assistant expert en cinéma. Tu recommandes des films en te basant UNIQUEMENT
@@ -50,7 +50,7 @@ Règles strictes :
 - Tu argumentes chaque recommandation en 2-3 phrases
 - Tu n'inventes jamais un film qui n'est pas dans le contexte"""
 
-#  4. GÉNÉRATION DE LA RÉPONSE 
+# 4. GÉNÉRATION DE LA RÉPONSE 
 
 def generer_reponse(question, chunks_pertinents):
     """Génère une réponse en utilisant les chunks comme contexte."""
@@ -79,14 +79,48 @@ Réponds en te basant uniquement sur ces fiches."""
     )
     return response.choices[0].message.content
 
-# TEST
+# 5. BONUS : SCORE DE CONFIANCE 
 
-question_test = "Un film de science-fiction avec de l'intelligence artificielle ?"
-print(f"Question test : {question_test}\n")
+def verifier_confiance(chunks):
+    """Avertit si les résultats trouvés ne sont pas très pertinents."""
+    if not chunks:
+        return False
+    meilleur_score = chunks[0]["score"]
+    if meilleur_score > 200:
+        print("⚠️  Avertissement : je n'ai pas trouvé de film très pertinent pour cette question.\n")
+        return False
+    return True
 
-chunks = rechercher(question_test, k=5)
-reponse = generer_reponse(question_test, chunks)
+# 6. BOUCLE INTERACTIVE 
+def main():
+    print("🎬 Assistant Films RAG — tapez 'quit' pour quitter\n")
 
-print("─" * 60)
-print(reponse)
-print("─" * 60)
+    while True:
+        question = input("🎤 Votre question : ").strip()
+
+        if question.lower() in ["quit", "exit", "q"]:
+            print("Au revoir !")
+            break
+
+        if not question:
+            continue
+
+        print("\n⏳ Recherche en cours...")
+        chunks = rechercher(question, k=5)
+        verifier_confiance(chunks)
+
+        print("⏳ Génération de la réponse...\n")
+        reponse = generer_reponse(question, chunks)
+
+        print("─" * 60)
+        print(reponse)
+        print("─" * 60)
+
+        print("\n📚 Sources consultées :")
+        for c in chunks:
+            m = c["metadata"]
+            print(f"  • {m['titre']} ({m['annee']}) — {m['note']}/10")
+        print()
+
+if __name__ == "__main__":
+    main()

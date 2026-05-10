@@ -1,5 +1,9 @@
 import pandas as pd
+import numpy as np
+import faiss
 import json
+import os
+from sentence_transformers import SentenceTransformer
 
 # ─── 1. CHARGER LES DONNÉES ───────────────────────────────────────────────────
 
@@ -62,7 +66,7 @@ def chunker(texte, taille_max=800, overlap=100):
     - overlap : caractères répétés entre deux chunks consécutifs
     """
     if len(texte) <= taille_max:
-        return [texte]  # pas besoin de découper
+        return [texte]
 
     chunks = []
     debut = 0
@@ -85,8 +89,31 @@ for doc in documents:
 
 print(f"✅ {len(chunks_avec_meta)} chunks créés")
 
-# Test : afficher les infos de chunking
-print(f"\n--- Infos chunking ---")
-print(f"Documents : {len(documents)}")
-print(f"Chunks : {len(chunks_avec_meta)}")
-print(f"Différence : {len(chunks_avec_meta) - len(documents)} chunks supplémentaires (textes longs découpés)")
+# ─── 4. EMBEDDINGS ────────────────────────────────────────────────────────────
+
+print("⏳ Chargement du modèle d'embedding...")
+modele = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
+
+print("⏳ Calcul des vecteurs (quelques minutes)...")
+textes = [c["contenu"] for c in chunks_avec_meta]
+vecteurs = modele.encode(textes, show_progress_bar=True, convert_to_numpy=True)
+vecteurs = vecteurs.astype(np.float32)
+
+print(f"✅ Vecteurs calculés — forme : {vecteurs.shape}")
+
+# ─── 5. CRÉATION ET SAUVEGARDE DE L'INDEX FAISS ──────────────────────────────
+
+dimension = vecteurs.shape[1]
+index = faiss.IndexFlatL2(dimension)
+index.add(vecteurs)
+print(f"✅ Index FAISS créé avec {index.ntotal} vecteurs")
+
+# Sauvegarder sur disque
+os.makedirs("index", exist_ok=True)
+faiss.write_index(index, "index/films.index")
+
+with open("index/films_meta.json", "w", encoding="utf-8") as f:
+    json.dump(chunks_avec_meta, f, ensure_ascii=False, indent=2)
+
+print("✅ Index sauvegardé dans index/")
+print("🎉 Indexation terminée ! Tu peux maintenant lancer rag.py")

@@ -53,7 +53,40 @@ for _, row in df.iterrows():
 
 print(f"✅ {len(documents)} documents préparés")
 
-# Test : afficher le premier document pour vérifier
-print("\n--- Exemple de document ---")
-print(documents[0]["contenu"])
-print("Métadonnées :", documents[0]["metadata"])
+# ─── 3. CHUNKING ──────────────────────────────────────────────────────────────
+
+def chunker(texte, taille_max=800, overlap=100):
+    """
+    Découpe un texte long en chunks avec chevauchement.
+    - taille_max : nombre max de caractères par chunk
+    - overlap : caractères répétés entre deux chunks consécutifs
+    """
+    if len(texte) <= taille_max:
+        return [texte]  # pas besoin de découper
+
+    chunks = []
+    debut = 0
+    while debut < len(texte):
+        fin = debut + taille_max
+        chunk = texte[debut:fin]
+        chunks.append(chunk)
+        debut += taille_max - overlap
+    return chunks
+
+# Appliquer le chunking sur tous les documents
+chunks_avec_meta = []
+for doc in documents:
+    morceaux = chunker(doc["contenu"])
+    for morceau in morceaux:
+        chunks_avec_meta.append({
+            "contenu": morceau,
+            "metadata": doc["metadata"]
+        })
+
+print(f"✅ {len(chunks_avec_meta)} chunks créés")
+
+# Test : afficher les infos de chunking
+print(f"\n--- Infos chunking ---")
+print(f"Documents : {len(documents)}")
+print(f"Chunks : {len(chunks_avec_meta)}")
+print(f"Différence : {len(chunks_avec_meta) - len(documents)} chunks supplémentaires (textes longs découpés)")
